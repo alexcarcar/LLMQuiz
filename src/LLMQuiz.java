@@ -7,31 +7,24 @@ import java.util.Scanner;
 
 public class LLMQuiz {
 
-    // Define a Scanner for user input based on System.in
     static Scanner scanner = new Scanner(System.in);
-
-    // Static int to score (only need one instance, hence it is static)
     static int score = 0;
 
     public static void main(String[] args) {
         System.out.println("Welcome to the LLM Quiz!");
         System.out.println("Test your knowledge on Large Language Models.\n");
 
-        // Get a list of questions and shuffle them
         List<Question> questions = generateQuestions();
-        Collections.shuffle(questions); // Randomize question order
+        Collections.shuffle(questions);
 
-        // Ask all the questions
         for (Question q : questions) {
             q.ask();
         }
 
-        // Print the results
         System.out.println("\nQuiz Complete!");
         System.out.println("Your final score: " + score + " out of " + questions.size());
     }
 
-    // Question bank
     public static List<Question> generateQuestions() {
         List<Question> questions = new ArrayList<>();
 
@@ -65,7 +58,7 @@ public class LLMQuiz {
 
         questions.add(new TrueFalse(
                 "LLMs are trained to predict the next sentence in a paragraph.",
-                false // They predict the next token, not full sentences
+                false
         ));
 
         questions.add(new FillInBlank(
@@ -82,7 +75,6 @@ public class LLMQuiz {
         return questions;
     }
 
-    // Abstract base class
     abstract static class Question {
         String prompt;
 
@@ -93,7 +85,6 @@ public class LLMQuiz {
         abstract void ask();
     }
 
-    // Multiple Choice Question
     static class MultipleChoice extends Question {
         String[] options;
         int correctIndex;
@@ -109,8 +100,20 @@ public class LLMQuiz {
             for (int i = 0; i < options.length; i++) {
                 System.out.println((i + 1) + ". " + options[i]);
             }
-            System.out.print("Your answer (1-" + options.length + "): ");
-            int answer = scanner.nextInt();
+
+            int answer = -1;
+            while (true) {
+                System.out.print("Your answer (1-" + options.length + "): ");
+                String input = scanner.nextLine().trim();
+                try {
+                    answer = Integer.parseInt(input);
+                    if (answer >= 1 && answer <= options.length) break;
+                    else System.out.println("Please enter a number between 1 and " + options.length + ".");
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                }
+            }
+
             if (answer - 1 == correctIndex) {
                 System.out.println("Correct!\n");
                 score++;
@@ -120,7 +123,6 @@ public class LLMQuiz {
         }
     }
 
-    // True/False Question
     static class TrueFalse extends Question {
         boolean correctAnswer;
 
@@ -131,7 +133,14 @@ public class LLMQuiz {
 
         void ask() {
             System.out.println(prompt + " (true/false)");
-            String answer = scanner.next().toLowerCase();
+            String answer;
+            while (true) {
+                System.out.print("Your answer: ");
+                answer = scanner.nextLine().trim().toLowerCase();
+                if (answer.equals("true") || answer.equals("false")) break;
+                else System.out.println("Please enter 'true' or 'false'.");
+            }
+
             boolean userAnswer = answer.equals("true");
             if (userAnswer == correctAnswer) {
                 System.out.println("Correct!\n");
@@ -142,7 +151,6 @@ public class LLMQuiz {
         }
     }
 
-    // Fill-in-the-Blank Question
     static class FillInBlank extends Question {
         String correctAnswer;
 
@@ -154,7 +162,7 @@ public class LLMQuiz {
         void ask() {
             System.out.println(prompt);
             System.out.print("Your answer: ");
-            String answer = scanner.next().toLowerCase();
+            String answer = scanner.nextLine().trim().toLowerCase();
             if (answer.equals(correctAnswer)) {
                 System.out.println("Correct!\n");
                 score++;
